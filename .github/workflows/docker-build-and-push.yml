@@ -3,11 +3,11 @@ name: ci
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       -
         name: Set up QEMU
@@ -22,10 +22,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image TAG with lower-cased repository name
+        run: |
+          echo "TAG=ghcr.io/${REPOSITORY,,}:latest" >>${GITHUB_ENV}
+        env:
+          REPOSITORY: '${{ github.repository }}'
+
       -
         name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ${{ env.TAG }}
