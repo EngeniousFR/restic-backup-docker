@@ -24,6 +24,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Print env
+        run: |
+          echo "Repository: ${REPOSITORY,,}"
+          echo "Commit SHA: ${GITHUB_SHA}"
+        env:
+          REPOSITORY: '${{ github.repository }}'
+          GITHUB_SHA: '${{ env.GITHUB_SHA }}'
+          
       - name: Set image TAG with lower-cased repository name
         run: |
           echo "TAG=ghcr.io/${REPOSITORY,,}:${GITHUB_SHA}" >>${GITHUB_ENV}
@@ -36,5 +44,5 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ env.GITHUB_SHA }} 
+          tags: latest,${{ env.GITHUB_SHA }} 
           file: Dockerfile
