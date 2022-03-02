@@ -23,26 +23,22 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Print env
+          
+      - name: Print env and Set image TAG with lower-cased repository name
         run: |
           echo "Repository: ${REPOSITORY,,}"
           echo "Commit SHA: ${GITHUB_SHA}"
-        env:
-          REPOSITORY: '${{ github.repository }}'
-          GITHUB_SHA: '${{ env.GITHUB_SHA }}'
+          echo "TAG=ghcr.io/${REPOSITORY,,}:${GITHUB_SHA},ghcr.io/${REPOSITORY,,}:${GITHUB_REFNAME}" >>${GITHUB_ENV}
           
-      - name: Set image TAG with lower-cased repository name
-        run: |
-          echo "TAG=ghcr.io/${REPOSITORY,,}:${GITHUB_SHA}" >>${GITHUB_ENV}
         env:
           REPOSITORY: '${{ github.repository }}'
-          GITHUB_SHA: '${{ env.GITHUB_SHA }}'
+          GITHUB_SHA: '${{ github.sha }}'
+          GITHUB_REFNAME: '${{ github.ref_name }}'
 
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: latest,${{ env.GITHUB_SHA }} 
+          tags: ${{ env.TAG }} 
           file: Dockerfile
